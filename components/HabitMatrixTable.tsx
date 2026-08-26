@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Task, Occurrence, Category, Status } from "@prisma/client"
-import { CheckCircle2, XCircle, Circle, MinusCircle, Sun, Brain, BookOpen, Heart, MoreHorizontal, Edit2, Trash2 } from "lucide-react"
+import { CheckCircle2, XCircle, Circle, MinusCircle, Sun, Brain, BookOpen, Heart, Edit2, Trash2 } from "lucide-react"
 
 export interface TaskWithOccurrences extends Task {
   occurrences: Occurrence[]
@@ -41,7 +41,6 @@ export function HabitMatrixTable({
       case Category.LEARNING:
         return "var(--cat-learning)"
       case Category.PERSONAL:
-        return "var(--cat-personal)"
       default:
         return "var(--cat-personal)"
     }
@@ -143,11 +142,14 @@ export function HabitMatrixTable({
   }
 
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xs">
-      <table className="w-full text-left border-collapse min-w-[760px]">
+    <div className="w-full overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xs relative">
+      <table className="w-full text-left border-collapse min-w-[680px] sm:min-w-[760px]">
         <thead>
           <tr className="border-b border-[var(--border)] bg-[var(--muted)]/40 text-xs font-semibold text-[var(--muted-foreground)]">
-            <th className="py-3 px-4 w-[280px]">Habit / Scheduled</th>
+            {/* Pinned Header Cell */}
+            <th className="py-3 px-4 w-[240px] sm:w-[280px] sticky left-0 z-20 bg-[var(--card)] border-r border-[var(--border)] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
+              Habit / Scheduled
+            </th>
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -189,22 +191,22 @@ export function HabitMatrixTable({
                   key={task.id}
                   className="group hover:bg-[var(--muted)]/20 transition-colors"
                 >
-                  {/* Pinned Habit Name & Time */}
-                  <td className="py-3.5 px-4 font-medium text-[var(--foreground)]">
+                  {/* Pinned Habit Name & Time (Sticky Column on Mobile) */}
+                  <td className="py-3.5 px-4 font-medium text-[var(--foreground)] sticky left-0 z-10 bg-[var(--card)] border-r border-[var(--border)] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] group-hover:bg-[var(--card)]">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
                         <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center shadow-xs shrink-0"
+                          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shadow-xs shrink-0"
                           style={{ backgroundColor: catBg }}
                         >
                           {getCategoryIcon(task.category)}
                         </div>
-                        <div>
-                          <div className="font-semibold text-sm leading-tight text-[var(--foreground)]">
+                        <div className="min-w-0">
+                          <div className="font-semibold text-xs sm:text-sm leading-tight text-[var(--foreground)] truncate max-w-[130px] sm:max-w-[170px]">
                             {task.title}
                           </div>
                           {task.scheduledTime && (
-                            <div className="text-[11px] text-[var(--muted-foreground)] font-normal mt-0.5">
+                            <div className="text-[10px] sm:text-[11px] text-[var(--muted-foreground)] font-normal mt-0.5 truncate">
                               🕒 {task.scheduledTime}
                             </div>
                           )}
@@ -212,7 +214,7 @@ export function HabitMatrixTable({
                       </div>
 
                       {/* Edit / Delete Row Action Buttons */}
-                      <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                      <div className="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 sm:gap-1 transition-opacity">
                         <button
                           onClick={() => onEditTask(task)}
                           className="p-1 rounded-md text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]"
