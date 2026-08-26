@@ -14,39 +14,47 @@ enum Category {
   PERSONAL
 }
 
-enum LogStatus {
+enum Recurrence {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum Status {
+  PENDING
   DONE
   MISSED
-  PENDING
   SKIPPED
 }
 
-model Habit {
-  id            String     @id @default(uuid())
+model Task {
+  id            String       @id @default(uuid())
+  userId        String?      @default("default-user")
   title         String
-  description   String?
-  category      Category   @default(PERSONAL)
-  scheduledTime String?    // e.g. "07:00 AM"
-  icon          String?    // Lucide icon name string e.g. "Sun", "Brain", "BookOpen"
-  color         String?    // Optional override or custom tag
-  archived      Boolean    @default(false)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  logs          HabitLog[]
+  category      Category?
+  recurrence    Recurrence   @default(DAILY)
+  scheduledTime String?      // e.g. "07:00 AM"
+  startDate     DateTime     @default(now())
+  endDate       DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  occurrences   Occurrence[]
 
-  @@map("habits")
+  @@map("tasks")
 }
 
-model HabitLog {
-  id        String    @id @default(uuid())
-  habitId   String
-  habit     Habit     @relation(fields: [habitId], references: [id], onDelete: Cascade)
-  date      String    // ISO date format YYYY-MM-DD
-  status    LogStatus @default(PENDING)
-  notes     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+model Occurrence {
+  id          String    @id @default(uuid())
+  taskId      String
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  date        String    // ISO Date format: YYYY-MM-DD
+  status      Status    @default(PENDING)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  @@unique([habitId, date])
-  @@map("habit_logs")
+  @@unique([taskId, date])
+  @@index([taskId, date])
+  @@map("occurrences")
 }
