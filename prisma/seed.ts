@@ -1,4 +1,5 @@
-import { PrismaClient, Category, Recurrence, Status } from "@prisma/client"
+import { PrismaClient } from "@prisma/client"
+import { Category, Recurrence, Status } from "../lib/types"
 
 const prisma = new PrismaClient()
 

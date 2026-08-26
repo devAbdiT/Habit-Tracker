@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Category, Recurrence } from "@prisma/client"
+import { Category, Recurrence } from "@/lib/types"
 import { X, Calendar, Clock, Tag, RefreshCw } from "lucide-react"
 
 export interface TaskFormData {

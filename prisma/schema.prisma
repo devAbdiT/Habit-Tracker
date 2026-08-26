@@ -3,37 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-enum Category {
-  HEALTH
-  WORK
-  LEARNING
-  PERSONAL
-}
-
-enum Recurrence {
-  DAILY
-  WEEKLY
-  MONTHLY
-  YEARLY
-}
-
-enum Status {
-  PENDING
-  DONE
-  MISSED
-  SKIPPED
 }
 
 model Task {
   id            String       @id @default(uuid())
   userId        String?      @default("default-user")
   title         String
-  category      Category?
-  recurrence    Recurrence   @default(DAILY)
+  category      String?      // HEALTH | WORK | LEARNING | PERSONAL
+  recurrence    String       @default("DAILY") // DAILY | WEEKLY | MONTHLY | YEARLY
   scheduledTime String?      // e.g. "07:00 AM"
   startDate     DateTime     @default(now())
   endDate       DateTime?
@@ -50,7 +29,7 @@ model Occurrence {
   taskId      String
   task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   date        String    // ISO Date format: YYYY-MM-DD
-  status      Status    @default(PENDING)
+  status      String    @default("PENDING") // PENDING | DONE | MISSED | SKIPPED
   completedAt DateTime?
   notes       String?
   createdAt   DateTime  @default(now())

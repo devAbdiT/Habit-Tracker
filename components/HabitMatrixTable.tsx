@@ -1,11 +1,14 @@
 "use client"
 
 import React from "react"
-import { Task, Occurrence, Category, Status } from "@prisma/client"
+import { Task, Occurrence } from "@prisma/client"
+import { Category, Status } from "@/lib/types"
 import { CheckCircle2, XCircle, Circle, MinusCircle, Sun, Brain, BookOpen, Heart, Edit2, Trash2 } from "lucide-react"
 
 export interface TaskWithOccurrences extends Task {
-  occurrences: Occurrence[]
+  category: Category | null
+  recurrence: string
+  occurrences: (Occurrence & { status: Status })[]
 }
 
 interface ColumnDay {
@@ -62,7 +65,7 @@ export function HabitMatrixTable({
   }
 
   // Calculate completion percentage threshold badge & color
-  const getCompletionBadge = (occurrences: Occurrence[]) => {
+  const getCompletionBadge = (occurrences: (Occurrence & { status: Status })[]) => {
     const doneCount = occurrences.filter((o) => o.status === Status.DONE).length
     const missedCount = occurrences.filter((o) => o.status === Status.MISSED).length
     const total = doneCount + missedCount

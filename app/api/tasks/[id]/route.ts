@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { Category, Recurrence } from "@prisma/client"
+import { Category, Recurrence } from "@/lib/types"
 
 export async function PATCH(
   request: NextRequest,

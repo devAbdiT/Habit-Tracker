@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { Status } from "@prisma/client"
+import { Status } from "@/lib/types"
 
 export async function GET(request: NextRequest) {
   try {

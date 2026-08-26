@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
-import { Task, Recurrence, Status } from "@prisma/client"
+import { Task } from "@prisma/client"
+import { Recurrence, Status } from "@/lib/types"
 
 /**
  * Format a Date object to YYYY-MM-DD string
@@ -122,7 +123,6 @@ export async function generateOccurrences(
 
   await prisma.occurrence.createMany({
     data: newOccurrencesData,
-    skipDuplicates: true,
   })
 
   // 4. Return created occurrences

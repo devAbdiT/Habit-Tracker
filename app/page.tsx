@@ -8,7 +8,7 @@ import { MonthlyCompletionChart } from "@/components/MonthlyCompletionChart"
 import { ConsistencyScoreCard } from "@/components/ConsistencyScoreCard"
 import { AddEditTaskModal, TaskFormData } from "@/components/AddEditTaskModal"
 import { TaskDetailModal } from "@/components/TaskDetailModal"
-import { Status, Category, Recurrence } from "@prisma/client"
+import { Status, Category, Recurrence } from "@/lib/types"
 
 export default function DashboardPage() {
   const [tasks, setTasks] = useState<TaskWithOccurrences[]>([])
@@ -105,7 +105,7 @@ export default function DashboardPage() {
     fetchAnalytics()
   }, [])
 
-  // Toggle cell occurrence status
+  // Toggle cell occurrence status with optimistic updates
   const handleToggleStatus = async (
     occurrenceId: string,
     currentStatus: Status,
@@ -235,7 +235,7 @@ export default function DashboardPage() {
               id: task.id,
               title: task.title,
               category: task.category || Category.PERSONAL,
-              recurrence: task.recurrence || Recurrence.DAILY,
+              recurrence: (task.recurrence as Recurrence) || Recurrence.DAILY,
               scheduledTime: task.scheduledTime || "08:00 AM",
               startDate: new Date(task.startDate).toISOString().split("T")[0],
             })

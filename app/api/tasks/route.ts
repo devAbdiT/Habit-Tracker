@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ensureOccurrencesForRange } from "@/lib/recurrence"
-import { Category, Recurrence } from "@prisma/client"
+import { Category, Recurrence } from "@/lib/types"
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: userId || "default-user",
         title: title.trim(),
-        category: category && Object.values(Category).includes(category) ? category : null,
+        category: category && Object.values(Category).includes(category) ? category : Category.PERSONAL,
         recurrence: recurrence && Object.values(Recurrence).includes(recurrence) ? recurrence : Recurrence.DAILY,
         scheduledTime: scheduledTime || null,
         startDate: startDate ? new Date(startDate) : new Date(),
