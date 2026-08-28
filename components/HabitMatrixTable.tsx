@@ -11,10 +11,10 @@ export interface TaskWithOccurrences extends Task {
   occurrences: (Occurrence & { status: Status })[]
 }
 
-interface ColumnDay {
-  key: string // YYYY-MM-DD
-  dayLabel: string // "Mon", "Tue"
-  dateLabel: string // "12th"
+export interface ColumnDay {
+  key: string // YYYY-MM-DD or YYYY-MM
+  dayLabel: string // "Mon", "Jan", "W1"
+  dateLabel: string // "12th", "2026"
   isToday?: boolean
 }
 
@@ -90,8 +90,11 @@ export function HabitMatrixTable({
   }
 
   // Render clickable status icon per cell
-  const renderStatusCell = (task: TaskWithOccurrences, columnDate: string) => {
-    const occ = task.occurrences.find((o) => o.date === columnDate)
+  const renderStatusCell = (task: TaskWithOccurrences, columnKey: string) => {
+    // Match occurrence by exact date key or month prefix (YYYY-MM)
+    const occ = task.occurrences.find(
+      (o) => o.date === columnKey || o.date.startsWith(columnKey)
+    )
 
     if (!occ) {
       return (
@@ -103,7 +106,7 @@ export function HabitMatrixTable({
       case Status.DONE:
         return (
           <button
-            onClick={() => onToggleStatus(occ.id, occ.status, task.id, columnDate)}
+            onClick={() => onToggleStatus(occ.id, occ.status, task.id, occ.date)}
             className="p-1 rounded-full hover:scale-110 transition-transform cursor-pointer"
             title="Completed (Click to change)"
           >
@@ -113,7 +116,7 @@ export function HabitMatrixTable({
       case Status.MISSED:
         return (
           <button
-            onClick={() => onToggleStatus(occ.id, occ.status, task.id, columnDate)}
+            onClick={() => onToggleStatus(occ.id, occ.status, task.id, occ.date)}
             className="p-1 rounded-full hover:scale-110 transition-transform cursor-pointer"
             title="Missed (Click to change)"
           >
@@ -123,7 +126,7 @@ export function HabitMatrixTable({
       case Status.SKIPPED:
         return (
           <button
-            onClick={() => onToggleStatus(occ.id, occ.status, task.id, columnDate)}
+            onClick={() => onToggleStatus(occ.id, occ.status, task.id, occ.date)}
             className="p-1 rounded-full hover:scale-110 transition-transform cursor-pointer"
             title="Skipped (Click to change)"
           >
@@ -134,7 +137,7 @@ export function HabitMatrixTable({
       default:
         return (
           <button
-            onClick={() => onToggleStatus(occ.id, occ.status, task.id, columnDate)}
+            onClick={() => onToggleStatus(occ.id, occ.status, task.id, occ.date)}
             className="p-1 rounded-full hover:scale-110 transition-transform cursor-pointer"
             title="Pending (Click to mark done)"
           >
@@ -156,7 +159,7 @@ export function HabitMatrixTable({
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`py-3 px-3 text-center w-[70px] ${
+                className={`py-3 px-3 text-center min-w-[60px] ${
                   col.isToday ? "bg-[var(--accent)]/50 text-[var(--foreground)]" : ""
                 }`}
               >
@@ -236,7 +239,7 @@ export function HabitMatrixTable({
                     </div>
                   </td>
 
-                  {/* Day Columns */}
+                  {/* Dynamic Columns */}
                   {columns.map((col) => (
                     <td
                       key={col.key}

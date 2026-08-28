@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { HeaderNav } from "@/components/HeaderNav"
 import { GranularityTabs, Granularity } from "@/components/GranularityTabs"
-import { HabitMatrixTable, TaskWithOccurrences } from "@/components/HabitMatrixTable"
+import { HabitMatrixTable, TaskWithOccurrences, ColumnDay } from "@/components/HabitMatrixTable"
 import { MonthlyCompletionChart } from "@/components/MonthlyCompletionChart"
 import { ConsistencyScoreCard } from "@/components/ConsistencyScoreCard"
 import { AddEditTaskModal, TaskFormData } from "@/components/AddEditTaskModal"
@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<TaskWithOccurrences[]>([])
   const [granularity, setGranularity] = useState<Granularity>("WEEK")
   const [activeViewNav, setActiveViewNav] = useState("Week")
+  const [columns, setColumns] = useState<ColumnDay[]>([])
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<TaskFormData | null>(null)
   const [selectedTaskForDetail, setSelectedTaskForDetail] = useState<TaskWithOccurrences | null>(null)
@@ -28,51 +29,125 @@ export default function DashboardPage() {
     ],
   })
 
-  // Generate date columns for current week (Mon–Sun)
-  const generateWeekColumns = () => {
+  // Dynamically generate column headers based on Granularity (DAY, WEEK, MONTH, YEAR)
+  const computeColumnsForGranularity = (mode: Granularity): ColumnDay[] => {
     const today = new Date()
-    const currentDay = today.getDay() // 0 = Sun, 1 = Mon...
-    const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay
+    const todayKey = today.toISOString().split("T")[0]
 
-    const days = []
-    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    if (mode === "DAY") {
+      // 7 Days centered around Today
+      const cols: ColumnDay[] = []
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(today)
-      d.setDate(today.getDate() + mondayOffset + i)
+      for (let i = -3; i <= 3; i++) {
+        const d = new Date(today)
+        d.setDate(today.getDate() + i)
+        const key = d.toISOString().split("T")[0]
+        const dateNum = d.getDate()
 
-      const key = d.toISOString().split("T")[0]
-      const dateNum = d.getDate()
-      
-      // Ordinal suffix (12th, 13th...)
-      const suffix =
-        dateNum % 10 === 1 && dateNum !== 11
-          ? "st"
-          : dateNum % 10 === 2 && dateNum !== 12
-          ? "nd"
-          : dateNum % 10 === 3 && dateNum !== 13
-          ? "rd"
-          : "th"
-
-      const isToday = key === today.toISOString().split("T")[0]
-
-      days.push({
-        key,
-        dayLabel: dayNames[i],
-        dateLabel: `${dateNum}${suffix}`,
-        isToday,
-      })
+        cols.push({
+          key,
+          dayLabel: dayNames[d.getDay()],
+          dateLabel: `${dateNum}`,
+          isToday: key === todayKey,
+        })
+      }
+      return cols
     }
-    return days
+
+    if (mode === "WEEK") {
+      // Current Week (Mon to Sun)
+      const currentDay = today.getDay()
+      const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay
+
+      const cols: ColumnDay[] = []
+      const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today)
+        d.setDate(today.getDate() + mondayOffset + i)
+
+        const key = d.toISOString().split("T")[0]
+        const dateNum = d.getDate()
+        const suffix =
+          dateNum % 10 === 1 && dateNum !== 11
+            ? "st"
+            : dateNum % 10 === 2 && dateNum !== 12
+            ? "nd"
+            : dateNum % 10 === 3 && dateNum !== 13
+            ? "rd"
+            : "th"
+
+        cols.push({
+          key,
+          dayLabel: dayNames[i],
+          dateLabel: `${dateNum}${suffix}`,
+          isToday: key === todayKey,
+        })
+      }
+      return cols
+    }
+
+    if (mode === "MONTH") {
+      // Days of the current month
+      const cols: ColumnDay[] = []
+      const year = today.getFullYear()
+      const month = today.getMonth()
+      const daysInMonth = new Date(year, month + 1, 0).getDate()
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const d = new Date(year, month, day)
+        const key = d.toISOString().split("T")[0]
+
+        cols.push({
+          key,
+          dayLabel: dayNames[d.getDay()],
+          dateLabel: `${day}`,
+          isToday: key === todayKey,
+        })
+      }
+      return cols
+    }
+
+    if (mode === "YEAR") {
+      // 12 Months of the current year
+      const cols: ColumnDay[] = []
+      const year = today.getFullYear()
+      const monthNames = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      ]
+      const currentMonthIndex = today.getMonth()
+
+      for (let m = 0; m < 12; m++) {
+        const monthNum = String(m + 1).padStart(2, "0")
+        const key = `${year}-${monthNum}`
+
+        cols.push({
+          key,
+          dayLabel: monthNames[m],
+          dateLabel: `${year}`,
+          isToday: m === currentMonthIndex,
+        })
+      }
+      return cols
+    }
+
+    return []
   }
 
-  const columns = generateWeekColumns()
+  // Fetch tasks for the current column view range
+  const fetchTasksForColumns = async (cols: ColumnDay[]) => {
+    if (!cols || cols.length === 0) return
 
-  // Fetch tasks and analytics from API
-  const fetchTasks = async () => {
     try {
-      const start = columns[0].key
-      const end = columns[columns.length - 1].key
+      let start = cols[0].key
+      let end = cols[cols.length - 1].key
+
+      // Expand month key format YYYY-MM to full dates for API query
+      if (start.length === 7) start = `${start}-01`
+      if (end.length === 7) end = `${end}-28`
 
       const res = await fetch(`/api/tasks?start=${start}&end=${end}`)
       if (res.ok) {
@@ -100,12 +175,15 @@ export default function DashboardPage() {
     }
   }
 
+  // Re-compute columns and refetch data whenever granularity changes
   useEffect(() => {
-    fetchTasks()
+    const newCols = computeColumnsForGranularity(granularity)
+    setColumns(newCols)
+    fetchTasksForColumns(newCols)
     fetchAnalytics()
-  }, [])
+  }, [granularity])
 
-  // Toggle cell occurrence status with optimistic updates
+  // Toggle cell occurrence status with optimistic UI updates
   const handleToggleStatus = async (
     occurrenceId: string,
     currentStatus: Status,
@@ -142,7 +220,7 @@ export default function DashboardPage() {
       fetchAnalytics()
     } catch (err) {
       console.error("Error updating occurrence:", err)
-      fetchTasks()
+      fetchTasksForColumns(columns)
     }
   }
 
@@ -156,7 +234,7 @@ export default function DashboardPage() {
         body: JSON.stringify(data),
       })
       if (res.ok) {
-        fetchTasks()
+        fetchTasksForColumns(columns)
         fetchAnalytics()
       }
     } else {
@@ -167,7 +245,7 @@ export default function DashboardPage() {
         body: JSON.stringify(data),
       })
       if (res.ok) {
-        fetchTasks()
+        fetchTasksForColumns(columns)
         fetchAnalytics()
       }
     }
@@ -184,7 +262,7 @@ export default function DashboardPage() {
       fetchAnalytics()
     } catch (err) {
       console.error("Error deleting task:", err)
-      fetchTasks()
+      fetchTasksForColumns(columns)
     }
   }
 
