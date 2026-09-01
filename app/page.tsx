@@ -224,7 +224,7 @@ export default function DashboardPage() {
     }
   }
 
-  // Create or Update task
+  // Create or Update task with Optimistic UI updates & error reporting
   const handleSaveTask = async (data: TaskFormData) => {
     if (editingTask && editingTask.id) {
       // Update
@@ -236,17 +236,58 @@ export default function DashboardPage() {
       if (res.ok) {
         fetchTasksForColumns(columns)
         fetchAnalytics()
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        alert(`Error updating habit: ${errData.error || "Please check your DATABASE_URL."}`)
       }
     } else {
-      // Create
+      // Optimistically insert new task into UI immediately
+      const tempId = `temp-${Date.now()}`
+      const tempOccurrences = columns.map((col) => ({
+        id: `occ-${tempId}-${col.key}`,
+        taskId: tempId,
+        date: col.key,
+        status: Status.PENDING,
+        completedAt: null,
+        notes: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }))
+
+      const optimisticTask: TaskWithOccurrences = {
+        id: tempId,
+        userId: "default-user",
+        title: data.title,
+        category: (data.category as Category) || Category.PERSONAL,
+        recurrence: data.recurrence || Recurrence.DAILY,
+        scheduledTime: data.scheduledTime || "08:00 AM",
+        startDate: new Date(data.startDate),
+        endDate: null,
+        archived: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        occurrences: tempOccurrences,
+      }
+
+      setTasks((prev) => [...prev, optimisticTask])
+
+      // Post to API
       const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       })
+
       if (res.ok) {
         fetchTasksForColumns(columns)
         fetchAnalytics()
+      } else {
+        const errData = await res.json().catch(() => ({}))
+        alert(
+          `Database connection notice: ${
+            errData.error || "Could not reach database server. Please verify your DATABASE_URL in .env."
+          }`
+        )
       }
     }
     setEditingTask(null)
