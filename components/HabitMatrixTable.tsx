@@ -1,13 +1,12 @@
 "use client"
 
 import React from "react"
-import { Task, Occurrence } from "@prisma/client"
-import { Category, Status } from "@/lib/types"
+import { Task, Occurrence, Category, Recurrence, Status } from "@prisma/client"
 import { CheckCircle2, XCircle, Circle, MinusCircle, Sun, Brain, BookOpen, Heart, Edit2, Trash2 } from "lucide-react"
 
 export interface TaskWithOccurrences extends Task {
   category: Category | null
-  recurrence: string
+  recurrence: Recurrence
   occurrences: (Occurrence & { status: Status })[]
 }
 
