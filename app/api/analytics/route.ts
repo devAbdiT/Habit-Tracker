@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { Status } from "@/lib/types"
+import { auth } from "@/auth"
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get("userId") || "default-user"
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
 
     // Fetch all active tasks for user with occurrences
     const tasks = await prisma.task.findMany({
@@ -61,7 +65,7 @@ export async function GET(request: NextRequest) {
     // Category Distribution
     const categoryCounts: Record<string, number> = {}
     tasks.forEach((t) => {
-      categoryCounts[t.category] = (categoryCounts[t.category] || 0) + 1
+      categoryCounts[t.category ?? "PERSONAL"] = (categoryCounts[t.category ?? "PERSONAL"] || 0) + 1
     })
     const categoryDistribution = Object.entries(categoryCounts).map(([name, value]) => ({
       name,

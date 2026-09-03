@@ -30,7 +30,8 @@ enum Status {
 
 model Task {
   id            String       @id @default(uuid())
-  userId        String?      @default("default-user")
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   title         String
   category      Category?
   recurrence    Recurrence   @default(DAILY)
@@ -59,4 +60,53 @@ model Occurrence {
   @@unique([taskId, date])
   @@index([taskId, date])
   @@map("occurrences")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  hashedPassword String?
+  image          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  tasks          Task[]
+}
+
+model Account {
+  id                 String  @id @default(uuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }

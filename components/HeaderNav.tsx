@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Plus, User, Sparkles, Sun, Moon } from "lucide-react"
+import { Plus, LogOut, Sparkles, Sun, Moon } from "lucide-react"
+import { signOut, useSession } from "next-auth/react"
 
 interface HeaderNavProps {
   onAddHabitClick: () => void
@@ -15,10 +16,10 @@ export function HeaderNav({
   onViewChange,
 }: HeaderNavProps) {
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const { data: session } = useSession()
   const views = ["Today", "Week", "Month", "Year"]
 
   useEffect(() => {
-    // Detect dark mode from html class or localStorage
     const isDark = document.documentElement.classList.contains("dark") ||
       (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)
     
@@ -39,6 +40,10 @@ export function HeaderNav({
       setIsDarkMode(true)
     }
   }
+
+  const userInitial = session?.user?.name
+    ? session.user.name.charAt(0).toUpperCase()
+    : session?.user?.email?.charAt(0).toUpperCase() ?? "?"
 
   return (
     <header className="w-full border-b border-[var(--border)] bg-[var(--card)] px-4 sm:px-6 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
@@ -95,9 +100,24 @@ export function HeaderNav({
           <span>Add Habit</span>
         </button>
 
-        <div className="w-8 h-8 rounded-full bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer transition-colors">
-          <User className="w-4 h-4" />
-        </div>
+        {/* User Avatar + Sign Out */}
+        {session?.user && (
+          <div className="flex items-center gap-2">
+            <div
+              title={session.user.name ?? session.user.email ?? ""}
+              className="w-8 h-8 rounded-full bg-[var(--primary)] flex items-center justify-center text-[var(--primary-foreground)] text-xs font-bold cursor-default select-none"
+            >
+              {userInitial}
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/signin" })}
+              title="Sign out"
+              className="p-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] hover:text-red-500 hover:border-red-300 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </header>
   )

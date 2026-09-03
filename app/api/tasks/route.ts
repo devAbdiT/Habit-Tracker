@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { ensureOccurrencesForRange } from "@/lib/recurrence"
 import { Category, Recurrence } from "@/lib/types"
+import { auth } from "@/auth"
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
+
     const { searchParams } = new URL(request.url)
     const start = searchParams.get("start")
     const end = searchParams.get("end")
-    const userId = searchParams.get("userId") || "default-user"
 
     // If a date range is requested, ensure occurrence records exist lazily
     if (start && end) {
@@ -45,8 +51,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+    const userId = session.user.id
+
     const body = await request.json()
-    const { title, category, recurrence, scheduledTime, startDate, endDate, userId } = body
+    const { title, category, recurrence, scheduledTime, startDate, endDate } = body
 
     if (!title || typeof title !== "string" || !title.trim()) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 })
@@ -54,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     const newTask = await prisma.task.create({
       data: {
-        userId: userId || "default-user",
+        userId,
         title: title.trim(),
         category: category && Object.values(Category).includes(category) ? category : Category.PERSONAL,
         recurrence: recurrence && Object.values(Recurrence).includes(recurrence) ? recurrence : Recurrence.DAILY,
@@ -72,7 +84,7 @@ export async function POST(request: NextRequest) {
     const startStr = today.toISOString().split("T")[0]
     const endStr = twoWeeksLater.toISOString().split("T")[0]
 
-    await ensureOccurrencesForRange(startStr, endStr, newTask.userId || "default-user")
+    await ensureOccurrencesForRange(startStr, endStr, userId)
 
     const taskWithOccurrences = await prisma.task.findUnique({
       where: { id: newTask.id },
