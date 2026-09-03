@@ -1,26 +1,8 @@
-import { auth } from "@/auth"
-import { NextResponse } from "next/server"
+import NextAuth from "next-auth"
+import { authConfig } from "./auth"
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl
-
-  const isAuthPage = pathname.startsWith("/signin") || pathname.startsWith("/signup")
-  const isAuthenticated = !!req.auth
-
-  // Redirect unauthenticated users to signin
-  if (!isAuthenticated && !isAuthPage) {
-    const signInUrl = new URL("/signin", req.url)
-    return NextResponse.redirect(signInUrl)
-  }
-
-  // Redirect authenticated users away from auth pages
-  if (isAuthenticated && isAuthPage) {
-    const homeUrl = new URL("/", req.url)
-    return NextResponse.redirect(homeUrl)
-  }
-
-  return NextResponse.next()
-})
+// Use the edge-safe config (no Prisma, no bcrypt) for middleware
+export default NextAuth(authConfig).auth
 
 export const config = {
   matcher: ["/((?!api/auth|api/register|_next/static|_next/image|favicon.ico).*)"],

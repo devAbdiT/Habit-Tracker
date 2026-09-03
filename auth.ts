@@ -3,10 +3,39 @@ import Credentials from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import type { NextAuthConfig } from "next-auth"
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+// Edge-safe config — no Prisma, no bcrypt. Used ONLY by middleware.
+export const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },
+  providers: [
+    // Credentials provider with no authorize() — authorize() uses Node APIs (Prisma/bcrypt)
+    // and cannot run on the Edge. The actual check happens in the full auth below.
+    Credentials({}),
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (session.user && token.id) {
+        session.user.id = token.id as string
+      }
+      return session
+    },
+  },
+  pages: {
+    signIn: "/signin",
+  },
+}
+
+// Full auth config — includes Prisma adapter + bcrypt. Used in API routes & Server Components.
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
+  adapter: PrismaAdapter(prisma),
   providers: [
     Credentials({
       name: "Credentials",
@@ -40,21 +69,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string
-      }
-      return session
-    },
-  },
-  pages: {
-    signIn: "/signin",
-  },
 })
