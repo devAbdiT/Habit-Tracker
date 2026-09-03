@@ -58,6 +58,16 @@ export async function GET(request: NextRequest) {
     // Overall Consistency Score
     const overallScore = totalEvaluated > 0 ? Math.round((totalDone / totalEvaluated) * 100) : 82
 
+    // Category Distribution
+    const categoryCounts: Record<string, number> = {}
+    tasks.forEach((t) => {
+      categoryCounts[t.category] = (categoryCounts[t.category] || 0) + 1
+    })
+    const categoryDistribution = Object.entries(categoryCounts).map(([name, value]) => ({
+      name,
+      value,
+    }))
+
     // Monthly / Weekly Time Series data for charts (Done vs Missed per period)
     const timeSeries = [
       { period: "W1", done: Math.max(totalDone, 12), missed: Math.max(totalMissed, 3) },
@@ -71,6 +81,7 @@ export async function GET(request: NextRequest) {
       scoreChange: "+5% this week",
       perTaskStats,
       timeSeries,
+      categoryDistribution,
     })
   } catch (error) {
     console.error("GET /api/analytics error:", error)

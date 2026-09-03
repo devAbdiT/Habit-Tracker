@@ -6,6 +6,7 @@ import { GranularityTabs, Granularity } from "@/components/GranularityTabs"
 import { HabitMatrixTable, TaskWithOccurrences, ColumnDay } from "@/components/HabitMatrixTable"
 import { MonthlyCompletionChart } from "@/components/MonthlyCompletionChart"
 import { ConsistencyScoreCard } from "@/components/ConsistencyScoreCard"
+import { CategoryDistributionChart } from "@/components/CategoryDistributionChart"
 import { AddEditTaskModal, TaskFormData } from "@/components/AddEditTaskModal"
 import { TaskDetailModal } from "@/components/TaskDetailModal"
 import { Status, Category, Recurrence } from "@/lib/types"
@@ -27,6 +28,7 @@ export default function DashboardPage() {
       { period: "W3", done: 10, missed: 5 },
       { period: "W4", done: 15, missed: 1 },
     ],
+    categoryDistribution: [] as { name: string; value: number }[],
   })
 
   // Dynamically generate column headers based on Granularity (DAY, WEEK, MONTH, YEAR)
@@ -168,6 +170,7 @@ export default function DashboardPage() {
           consistencyScore: data.consistencyScore,
           scoreChange: data.scoreChange,
           timeSeries: data.timeSeries,
+          categoryDistribution: data.categoryDistribution || [],
         })
       }
     } catch (err) {
@@ -344,6 +347,25 @@ export default function DashboardPage() {
           />
         </div>
 
+        {/* Analytics Grid - Single Row Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-2">
+            <MonthlyCompletionChart data={analyticsData.timeSeries} />
+          </div>
+          <div className="lg:col-span-1 h-full">
+            <ConsistencyScoreCard
+              score={analyticsData.consistencyScore}
+              scoreChange={analyticsData.scoreChange}
+              onViewInsights={() => {
+                if (tasks.length > 0) setSelectedTaskForDetail(tasks[0])
+              }}
+            />
+          </div>
+          <div className="lg:col-span-1 h-full">
+            <CategoryDistributionChart data={analyticsData.categoryDistribution} />
+          </div>
+        </div>
+
         {/* Core Spreadsheet Habit Matrix Table */}
         <HabitMatrixTable
           tasks={tasks}
@@ -362,22 +384,6 @@ export default function DashboardPage() {
           }}
           onDeleteTask={handleDeleteTask}
         />
-
-        {/* Analytics Bottom Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <MonthlyCompletionChart data={analyticsData.timeSeries} />
-          </div>
-          <div>
-            <ConsistencyScoreCard
-              score={analyticsData.consistencyScore}
-              scoreChange={analyticsData.scoreChange}
-              onViewInsights={() => {
-                if (tasks.length > 0) setSelectedTaskForDetail(tasks[0])
-              }}
-            />
-          </div>
-        </div>
       </main>
 
       {/* Modals */}
