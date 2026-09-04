@@ -4,6 +4,7 @@ import React from "react"
 import { Task, Occurrence, Category, Recurrence, Status } from "@prisma/client"
 import { CheckCircle2, XCircle, Circle, MinusCircle, Sun, Brain, BookOpen, Heart, Edit2, Trash2, Flame } from "lucide-react"
 import { calculateStreaks } from "@/lib/streaks"
+import { StreakHeatmap } from "@/components/StreakHeatmap"
 
 export interface TaskWithOccurrences extends Task {
   category: Category | null
@@ -73,20 +74,10 @@ export function HabitMatrixTable({
     const rate = total > 0 ? Math.round((doneCount / total) * 100) : 85
 
     let color = "var(--threshold-high)" // ≥80%
-    let pathColor = "#22A559"
-    let d = "M2 14 L8 10 L14 12 L20 4"
+    if (rate < 50) color = "var(--threshold-low)"
+    else if (rate < 80) color = "var(--threshold-mid)"
 
-    if (rate < 50) {
-      color = "var(--threshold-low)"
-      pathColor = "#E5484D"
-      d = "M2 4 L8 8 L14 10 L20 16"
-    } else if (rate < 80) {
-      color = "var(--threshold-mid)"
-      pathColor = "#F5A623"
-      d = "M2 10 L8 8 L14 12 L20 9"
-    }
-
-    return { rate, color, pathColor, d }
+    return { rate, color }
   }
 
   // Render clickable status icon per cell
@@ -189,7 +180,7 @@ export function HabitMatrixTable({
             </tr>
           ) : (
             tasks.map((task) => {
-              const { rate, color, pathColor, d } = getCompletionBadge(task.occurrences)
+              const { rate, color } = getCompletionBadge(task.occurrences)
               const catBg = getCategoryColor(task.category)
               const { currentStreak } = calculateStreaks(task.occurrences, task as any)
               const isHotStreak = currentStreak >= 7
@@ -272,23 +263,20 @@ export function HabitMatrixTable({
 
                   {/* 8-Week Trend Column */}
                   <td className="py-3.5 px-4 text-right align-middle">
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center justify-end gap-2">
                       <span
-                        className="px-2 py-0.5 rounded-full text-[11px] font-bold text-white shadow-2xs"
+                        className="px-2 py-0.5 rounded-full text-[11px] font-bold text-white shadow-2xs shrink-0"
                         style={{ backgroundColor: color }}
                       >
                         {rate}%
                       </span>
-                      <svg className="w-12 h-5 overflow-visible" viewBox="0 0 22 20">
-                        <path
-                          d={d}
-                          fill="none"
-                          stroke={pathColor}
-                          strokeWidth="2.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
+                      <div className="w-[110px] shrink-0">
+                        <StreakHeatmap
+                          occurrences={task.occurrences as any}
+                          weeks={8}
+                          compact
                         />
-                      </svg>
+                      </div>
                     </div>
                   </td>
                 </tr>

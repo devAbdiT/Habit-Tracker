@@ -12,6 +12,59 @@ export async function GET(request: NextRequest) {
     }
     const userId = session.user.id
 
+    const { searchParams } = new URL(request.url)
+    const taskId = searchParams.get("taskId")
+    const range  = searchParams.get("range") ?? "default"
+
+    // ── Single-task heatmap mode ──────────────────────────────────────────
+    if (taskId) {
+      const task = await prisma.task.findFirst({
+        where: { id: taskId, userId },
+        include: {
+          occurrences: {
+            orderBy: { date: "asc" },
+            // For a full year, don't limit; for default only last 26 weeks
+            ...(range === "year" ? {} : {
+              where: {
+                date: {
+                  gte: (() => {
+                    const d = new Date()
+                    d.setDate(d.getDate() - 26 * 7)
+                    return d.toISOString().slice(0, 10)
+                  })(),
+                },
+              },
+            }),
+          },
+        },
+      })
+
+      if (!task) {
+        return NextResponse.json({ error: "Task not found" }, { status: 404 })
+      }
+
+      const occurrences = task.occurrences
+      const heatmapData = occurrences.map(o => ({ date: o.date, status: o.status }))
+      const { currentStreak, bestStreak } = calculateStreaks(occurrences, task as any)
+
+      const doneCount   = occurrences.filter(o => o.status === Status.DONE).length
+      const missedCount = occurrences.filter(o => o.status === Status.MISSED).length
+      const total       = doneCount + missedCount
+      const completionRate = total > 0 ? Math.round((doneCount / total) * 100) : 0
+
+      return NextResponse.json({
+        taskId: task.id,
+        title:  task.title,
+        heatmapData,
+        currentStreak,
+        bestStreak,
+        completionRate,
+        doneCount,
+        missedCount,
+      })
+    }
+
+    // ── Full dashboard analytics ──────────────────────────────────────────
     // Fetch all active tasks for user with occurrences
     const tasks = await prisma.task.findMany({
       where: {
