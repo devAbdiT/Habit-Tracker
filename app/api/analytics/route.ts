@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { Status } from "@/lib/types"
+import { Status, Recurrence } from "@/lib/types"
 import { auth } from "@/auth"
+import { calculateStreaks } from "@/lib/streaks"
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,6 +48,11 @@ export async function GET(request: NextRequest) {
         value: o.status === Status.DONE ? 1 : 0,
       }))
 
+      const { currentStreak, bestStreak } = calculateStreaks(
+        occurrences,
+        task as any // passed task object with startDate, endDate, recurrence
+      )
+
       return {
         taskId: task.id,
         title: task.title,
@@ -56,6 +62,8 @@ export async function GET(request: NextRequest) {
         missedCount,
         totalScheduled: occurrences.length,
         sparkline,
+        currentStreak,
+        bestStreak,
       }
     })
 

@@ -2,7 +2,8 @@
 
 import React from "react"
 import { Task, Occurrence, Category, Recurrence, Status } from "@prisma/client"
-import { CheckCircle2, XCircle, Circle, MinusCircle, Sun, Brain, BookOpen, Heart, Edit2, Trash2 } from "lucide-react"
+import { CheckCircle2, XCircle, Circle, MinusCircle, Sun, Brain, BookOpen, Heart, Edit2, Trash2, Flame } from "lucide-react"
+import { calculateStreaks } from "@/lib/streaks"
 
 export interface TaskWithOccurrences extends Task {
   category: Category | null
@@ -190,11 +191,15 @@ export function HabitMatrixTable({
             tasks.map((task) => {
               const { rate, color, pathColor, d } = getCompletionBadge(task.occurrences)
               const catBg = getCategoryColor(task.category)
+              const { currentStreak } = calculateStreaks(task.occurrences, task as any)
+              const isHotStreak = currentStreak >= 7
 
               return (
                 <tr
                   key={task.id}
-                  className="group hover:bg-[var(--muted)]/20 transition-colors"
+                  className={`group hover:bg-[var(--muted)]/20 transition-colors ${
+                    isHotStreak ? "bg-orange-50/50 dark:bg-orange-950/20" : ""
+                  }`}
                 >
                   {/* Pinned Habit Name & Time (Sticky Column on Mobile) */}
                   <td className="py-3.5 px-4 font-medium text-[var(--foreground)] sticky left-0 z-10 bg-[var(--card)] border-r border-[var(--border)] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] group-hover:bg-[var(--card)]">
@@ -207,8 +212,21 @@ export function HabitMatrixTable({
                           {getCategoryIcon(task.category)}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-semibold text-xs sm:text-sm leading-tight text-[var(--foreground)] truncate max-w-[130px] sm:max-w-[170px]">
-                            {task.title}
+                          <div className="font-semibold text-xs sm:text-sm leading-tight text-[var(--foreground)] flex items-center gap-1.5 flex-wrap">
+                            <span className="truncate max-w-[130px] sm:max-w-[170px]">{task.title}</span>
+                            {currentStreak > 0 && (
+                              <div
+                                className={`flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                                  isHotStreak
+                                    ? "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400 ring-1 ring-orange-500/50 shadow-[0_0_8px_rgba(249,115,22,0.4)]"
+                                    : "bg-orange-50 text-orange-500 dark:bg-orange-900/20 dark:text-orange-500"
+                                }`}
+                                title={`${currentStreak} streak`}
+                              >
+                                <Flame className="w-3 h-3" />
+                                {currentStreak}
+                              </div>
+                            )}
                           </div>
                           {task.scheduledTime && (
                             <div className="text-[10px] sm:text-[11px] text-[var(--muted-foreground)] font-normal mt-0.5 truncate">

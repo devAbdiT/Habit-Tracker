@@ -2,7 +2,8 @@
 
 import React from "react"
 import { TaskWithOccurrences } from "@/components/HabitMatrixTable"
-import { X, Calendar, CheckCircle2, XCircle, Flame, Award } from "lucide-react"
+import { X, Calendar, CheckCircle2, XCircle, Flame, Award, Trophy } from "lucide-react"
+import { calculateStreaks } from "@/lib/streaks"
 import {
   AreaChart,
   Area,
@@ -28,6 +29,8 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
   const totalEvaluated = doneCount + missedCount
   const completionRate =
     totalEvaluated > 0 ? Math.round((doneCount / totalEvaluated) * 100) : 85
+
+  const { currentStreak, bestStreak } = calculateStreaks(occurrences, task as any)
 
   // Map occurrences to 30-day cumulative / daily chart points
   const chartData = occurrences.map((o, idx) => ({
@@ -77,10 +80,10 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
             <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold">
-              Completion Rate
+              Rate
             </div>
             <div className="text-xl font-bold mt-1" style={{ color: rateColor }}>
               {completionRate}%
@@ -89,12 +92,12 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
 
           <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
             <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3 text-[var(--status-done)]" /> Completed
+              <CheckCircle2 className="w-3 h-3 text-[var(--status-done)]" /> Done
             </div>
             <div className="text-xl font-bold text-[var(--foreground)] mt-1">{doneCount}</div>
           </div>
 
-          <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+          <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--background)] hidden sm:block">
             <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold flex items-center gap-1">
               <XCircle className="w-3 h-3 text-[var(--status-missed)]" /> Missed
             </div>
@@ -103,10 +106,19 @@ export function TaskDetailModal({ task, isOpen, onClose }: TaskDetailModalProps)
 
           <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
             <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold flex items-center gap-1">
-              <Flame className="w-3 h-3 text-orange-500" /> Current Streak
+              <Flame className="w-3 h-3 text-orange-500" /> Current
             </div>
             <div className="text-xl font-bold text-[var(--foreground)] mt-1">
-              {doneCount > 0 ? `${doneCount} Days` : "0 Days"}
+              {currentStreak}
+            </div>
+          </div>
+
+          <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--background)]">
+            <div className="text-[10px] text-[var(--muted-foreground)] uppercase font-semibold flex items-center gap-1">
+              <Trophy className="w-3 h-3 text-yellow-500" /> Best
+            </div>
+            <div className="text-xl font-bold text-[var(--foreground)] mt-1">
+              {bestStreak}
             </div>
           </div>
         </div>
