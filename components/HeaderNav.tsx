@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Plus, LogOut, Sparkles, Sun, Moon } from "lucide-react"
+import { Plus, LogOut, Sparkles, Sun, Moon, Settings } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
+import Link from "next/link"
 
 interface HeaderNavProps {
   onAddHabitClick: () => void
@@ -109,6 +110,13 @@ export function HeaderNav({
             >
               {userInitial}
             </div>
+            <Link
+              href="/settings"
+              title="Settings"
+              className="p-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--primary)] transition-colors cursor-pointer"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
             <button
               onClick={() => signOut({ callbackUrl: "/signin" })}
               title="Sign out"

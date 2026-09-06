@@ -15,7 +15,7 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
-    const { title, category, recurrence, scheduledTime, startDate, endDate, archived } = body
+    const { title, category, recurrence, scheduledTime, startDate, endDate, archived, emailReminderEnabled } = body
 
     const existingTask = await prisma.task.findUnique({
       where: { id, userId: session.user.id },
@@ -39,6 +39,7 @@ export async function PATCH(
         ...(startDate !== undefined && { startDate: new Date(startDate) }),
         ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
         ...(archived !== undefined && { archived: Boolean(archived) }),
+        ...(emailReminderEnabled !== undefined && { emailReminderEnabled: Boolean(emailReminderEnabled) }),
       },
       include: {
         occurrences: true,

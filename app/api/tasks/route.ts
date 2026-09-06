@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id
 
     const body = await request.json()
-    const { title, category, recurrence, scheduledTime, startDate, endDate } = body
+    const { title, category, recurrence, scheduledTime, startDate, endDate, emailReminderEnabled } = body
 
     if (!title || typeof title !== "string" || !title.trim()) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 })
@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
         scheduledTime: scheduledTime || null,
         startDate: startDate ? new Date(startDate) : new Date(),
         endDate: endDate ? new Date(endDate) : null,
+        emailReminderEnabled: emailReminderEnabled !== undefined ? emailReminderEnabled : true,
       },
     })
 

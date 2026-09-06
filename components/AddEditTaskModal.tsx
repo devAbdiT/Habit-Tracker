@@ -11,6 +11,7 @@ export interface TaskFormData {
   recurrence: Recurrence
   scheduledTime: string
   startDate: string
+  emailReminderEnabled: boolean
 }
 
 interface AddEditTaskModalProps {
@@ -32,6 +33,7 @@ export function AddEditTaskModal({
     recurrence: Recurrence.DAILY,
     scheduledTime: "08:00 AM",
     startDate: new Date().toISOString().split("T")[0],
+    emailReminderEnabled: true,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -45,6 +47,7 @@ export function AddEditTaskModal({
         recurrence: Recurrence.DAILY,
         scheduledTime: "08:00 AM",
         startDate: new Date().toISOString().split("T")[0],
+        emailReminderEnabled: true,
       })
     }
   }, [initialData, isOpen])
@@ -160,6 +163,19 @@ export function AddEditTaskModal({
                 className="w-full px-3 py-2 text-sm rounded-md border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
               />
             </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-2 pb-2">
+            <input
+              type="checkbox"
+              id="emailReminder"
+              checked={formData.emailReminderEnabled}
+              onChange={(e) => setFormData({ ...formData, emailReminderEnabled: e.target.checked })}
+              className="w-4 h-4 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)]"
+            />
+            <label htmlFor="emailReminder" className="text-sm font-medium text-[var(--foreground)]">
+              Enable Email Reminders
+            </label>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border)]">

@@ -37,10 +37,11 @@ model Task {
   recurrence    Recurrence   @default(DAILY)
   scheduledTime String?      // e.g. "07:00 AM"
   startDate     DateTime     @default(now())
-  endDate       DateTime?
-  archived      Boolean      @default(false)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  endDate              DateTime?
+  emailReminderEnabled Boolean      @default(true)
+  archived             Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
   occurrences   Occurrence[]
 
   @@map("tasks")
@@ -51,11 +52,12 @@ model Occurrence {
   taskId      String
   task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   date        String    // ISO Date format: YYYY-MM-DD
-  status      Status    @default(PENDING)
-  completedAt DateTime?
-  notes       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  status             Status    @default(PENDING)
+  completedAt        DateTime?
+  notes              String?
+  lastReminderSentAt DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@unique([taskId, date])
   @@index([taskId, date])
@@ -65,12 +67,14 @@ model Occurrence {
 model User {
   id             String    @id @default(uuid())
   name           String?
-  email          String?   @unique
-  emailVerified  DateTime?
-  hashedPassword String?
-  image          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  email                    String?   @unique
+  emailVerified            DateTime?
+  hashedPassword           String?
+  image                    String?
+  emailRemindersEnabled    Boolean   @default(true)
+  pushNotificationsEnabled Boolean   @default(true)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
   accounts       Account[]
   sessions       Session[]
   tasks          Task[]
