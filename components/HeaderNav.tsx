@@ -6,9 +6,9 @@ import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 
 interface HeaderNavProps {
-  onAddHabitClick: () => void
-  activeView: string
-  onViewChange: (view: string) => void
+  onAddHabitClick?: () => void
+  activeView?: string
+  onViewChange?: (view: string) => void
 }
 
 export function HeaderNav({
@@ -59,25 +59,26 @@ export function HeaderNav({
       </div>
 
       {/* Nav View Filter Links */}
-      <nav className="hidden md:flex items-center gap-6">
-        {views.map((v) => {
-          const isActive = activeView.toLowerCase() === v.toLowerCase()
-          return (
-            <button
-              key={v}
-              onClick={() => onViewChange(v)}
-              className={`text-sm font-medium transition-colors ${
-                isActive
-                  ? "text-[var(--foreground)] font-semibold border-b-2 border-[var(--primary)] pb-0.5"
-                  : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-              }`}
-            >
-              {v}
-            </button>
-          )
-        })}
-      </nav>
-
+      {activeView && onViewChange && (
+        <nav className="hidden md:flex items-center gap-6">
+          {views.map((v) => {
+            const isActive = activeView.toLowerCase() === v.toLowerCase()
+            return (
+              <button
+                key={v}
+                onClick={() => onViewChange(v)}
+                className={`text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-[var(--foreground)] font-semibold border-b-2 border-[var(--primary)] pb-0.5"
+                    : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+                }`}
+              >
+                {v}
+              </button>
+            )
+          })}
+        </nav>
+      )}
       {/* Actions */}
       <div className="flex items-center gap-2.5">
         {/* Light/Dark Mode Toggle Button */}
@@ -93,13 +94,15 @@ export function HeaderNav({
           )}
         </button>
 
-        <button
-          onClick={onAddHabitClick}
-          className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity shadow-xs cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Habit</span>
-        </button>
+        {onAddHabitClick && (
+          <button
+            onClick={onAddHabitClick}
+            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90 transition-opacity shadow-xs cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Habit</span>
+          </button>
+        )}
 
         {/* User Avatar + Sign Out */}
         {session?.user && (

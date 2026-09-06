@@ -253,6 +253,7 @@ export default function DashboardPage() {
         status: Status.PENDING,
         completedAt: null,
         notes: null,
+        lastReminderSentAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       }))
@@ -266,6 +267,7 @@ export default function DashboardPage() {
         scheduledTime: data.scheduledTime || "08:00 AM",
         startDate: new Date(data.startDate),
         endDate: null,
+        emailReminderEnabled: data.emailReminderEnabled ?? true,
         archived: false,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -379,6 +381,7 @@ export default function DashboardPage() {
               recurrence: (task.recurrence as Recurrence) || Recurrence.DAILY,
               scheduledTime: task.scheduledTime || "08:00 AM",
               startDate: new Date(task.startDate).toISOString().split("T")[0],
+              emailReminderEnabled: task.emailReminderEnabled,
             })
             setIsAddModalOpen(true)
           }}
