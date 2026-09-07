@@ -5,6 +5,7 @@ import { Task, Occurrence, Category, Recurrence, Status } from "@prisma/client"
 import { CheckCircle2, XCircle, Circle, MinusCircle, Sun, Brain, BookOpen, Heart, Edit2, Trash2, Flame } from "lucide-react"
 import { calculateStreaks } from "@/lib/streaks"
 import { StreakHeatmap } from "@/components/StreakHeatmap"
+import { EmptyState } from "@/components/EmptyState"
 
 export interface TaskWithOccurrences extends Task {
   category: Category | null
@@ -25,6 +26,7 @@ interface HabitMatrixTableProps {
   onToggleStatus: (occurrenceId: string, currentStatus: Status, taskId: string, dateStr: string) => void
   onEditTask: (task: TaskWithOccurrences) => void
   onDeleteTask: (taskId: string) => void
+  onAddTask: () => void
 }
 
 export function HabitMatrixTable({
@@ -33,6 +35,7 @@ export function HabitMatrixTable({
   onToggleStatus,
   onEditTask,
   onDeleteTask,
+  onAddTask,
 }: HabitMatrixTableProps) {
 
   // Get pastel background color by category
@@ -171,11 +174,8 @@ export function HabitMatrixTable({
         <tbody className="divide-y divide-[var(--border)] text-sm">
           {tasks.length === 0 ? (
             <tr>
-              <td
-                colSpan={columns.length + 2}
-                className="py-12 text-center text-xs text-[var(--muted-foreground)]"
-              >
-                No habits added yet. Click "+ Add Habit" to create your first habit!
+              <td colSpan={columns.length + 2}>
+                <EmptyState onAddTask={onAddTask} />
               </td>
             </tr>
           ) : (
