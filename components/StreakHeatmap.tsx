@@ -109,13 +109,15 @@ export function StreakHeatmap({
   const STEP   = CELL + GAP
 
   const handleMouseEnter = useCallback((e: React.MouseEvent<SVGRectElement>, label: string) => {
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
     setTooltip({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: e.clientX,
+      y: e.clientY,
       label,
     })
+  }, [])
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGRectElement>) => {
+    setTooltip(prev => (prev ? { ...prev, x: e.clientX, y: e.clientY } : null))
   }, [])
 
   const handleMouseLeave = useCallback(() => setTooltip(null), [])
@@ -216,6 +218,7 @@ export function StreakHeatmap({
                   fill={color}
                   style={{ cursor: "pointer", transition: "opacity 0.1s" }}
                   onMouseEnter={e => handleMouseEnter(e, label)}
+                  onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                 />
               )
@@ -226,10 +229,10 @@ export function StreakHeatmap({
         {/* Tooltip */}
         {tooltip && (
           <div
-            className="pointer-events-none absolute z-50 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shadow-lg border"
+            className="pointer-events-none fixed z-50 px-2.5 py-1.5 rounded-lg text-[11px] font-medium shadow-lg border -translate-x-1/2 -translate-y-full mb-2"
             style={{
-              left: tooltip.x + 12,
-              top:  tooltip.y - 30,
+              left: tooltip.x,
+              top:  tooltip.y - 8,
               backgroundColor: "var(--card)",
               borderColor:     "var(--border)",
               color:           "var(--foreground)",

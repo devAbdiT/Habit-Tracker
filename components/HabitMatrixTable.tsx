@@ -101,7 +101,7 @@ export function HabitMatrixTable({
         return (
           <button
             onClick={() => onToggleStatus(occ.id, occ.status, task.id, occ.date)}
-            className="p-1 rounded-full hover:scale-110 transition-transform cursor-pointer"
+            className="p-1 rounded-full hover:opacity-75 transition-opacity cursor-pointer"
             title="Completed (Click to change)"
           >
             <CheckCircle2 className="w-5 h-5 text-[var(--status-done)] fill-[var(--status-done)]/10" />
@@ -111,7 +111,7 @@ export function HabitMatrixTable({
         return (
           <button
             onClick={() => onToggleStatus(occ.id, occ.status, task.id, occ.date)}
-            className="p-1 rounded-full hover:scale-110 transition-transform cursor-pointer"
+            className="p-1 rounded-full hover:opacity-75 transition-opacity cursor-pointer"
             title="Missed (Click to change)"
           >
             <XCircle className="w-5 h-5 text-[var(--status-missed)] fill-[var(--status-missed)]/10" />
@@ -121,7 +121,7 @@ export function HabitMatrixTable({
         return (
           <button
             onClick={() => onToggleStatus(occ.id, occ.status, task.id, occ.date)}
-            className="p-1 rounded-full hover:scale-110 transition-transform cursor-pointer"
+            className="p-1 rounded-full hover:opacity-75 transition-opacity cursor-pointer"
             title="Skipped (Click to change)"
           >
             <MinusCircle className="w-5 h-5 text-[var(--status-skipped)] fill-[var(--status-skipped)]/10" />
@@ -132,7 +132,7 @@ export function HabitMatrixTable({
         return (
           <button
             onClick={() => onToggleStatus(occ.id, occ.status, task.id, occ.date)}
-            className="p-1 rounded-full hover:scale-110 transition-transform cursor-pointer"
+            className="p-1 rounded-full hover:opacity-75 transition-opacity cursor-pointer"
             title="Pending (Click to mark done)"
           >
             <Circle className="w-5 h-5 text-[var(--status-pending)] stroke-[1.5]" />
