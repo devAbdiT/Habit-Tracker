@@ -4,13 +4,15 @@ import { Resend } from "resend"
 import { getReminderEmailTemplate } from "@/lib/email-template"
 import { Status } from "@prisma/client"
 
-// Note: Email works reliably across all devices/browsers with no permission prompt needed, 
+// Note: Email works reliably across all devices/browsers with no permission prompt needed,
 // making it a good default for users who skip or deny push permission.
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-
 export async function GET(request: Request) {
+  // Lazily initialise Resend inside the handler so the module can be imported
+  // during `next build` even when RESEND_API_KEY is not set at build time.
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+
   try {
     // Verify a cron secret if configured (for security)
     const authHeader = request.headers.get("authorization")
